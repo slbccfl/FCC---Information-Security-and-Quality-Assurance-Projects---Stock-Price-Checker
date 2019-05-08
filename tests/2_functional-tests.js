@@ -23,11 +23,12 @@ suite('Functional Tests', function() {
         .query({stock: 'goog'})
         .end(function(err, res){
           assert.equal(res.status, 200);
+          console.log(res.body);
           assert.property(res.body.stockData, 'stock');
           assert.property(res.body.stockData, 'price');
           assert.property(res.body.stockData, 'likes');
           assert.equal(res.body.stockData.stock, 'GOOG');
-          done();
+          done(); 
         });
       });
       
