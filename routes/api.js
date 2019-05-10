@@ -17,14 +17,14 @@ module.exports = function (app) {
   
   app.route('/api/stock-prices')
     .get(function (req, res){
-      var stockData = {}
+      var response = {}
       var stock = req.query.stock;
       var like = req.query.like || false;
       var reqIP = req.connection.remoteAddress;
-      stockData.stock = req.query.stock;
-      stockData.price = 1;
-      stockData.likes = 1;
-      res.json(stockData); 
+      response.stockData.stock = req.query.stock.toUpperCase(); 
+      response.stockData.price = 1;
+      response.stockData.likes = 1;
+      res.json(response);
   });
     
 }; 
