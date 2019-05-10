@@ -13,6 +13,8 @@ const MongoClient = require('mongodb');
 
 const MONGODB_CONNECTION_STRING = process.env.DB;
 
+const alphaVantageAPIKEY = process.env.APIKEY;
+
 module.exports = function (app) {
   
   app.route('/api/stock-prices')
