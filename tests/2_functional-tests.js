@@ -22,8 +22,8 @@ suite('Functional Tests', function() {
         .get('/api/stock-prices')
         .query({stock: 'goog'})
         .end(function(err, res){
+          console.log('body: ' + JSON.stringify(res.body));
           assert.equal(res.status, 200);
-          console.log(res.body);
           assert.property(res.body.stockData, 'stock');
           assert.property(res.body.stockData, 'price');
           assert.property(res.body.stockData, 'likes');

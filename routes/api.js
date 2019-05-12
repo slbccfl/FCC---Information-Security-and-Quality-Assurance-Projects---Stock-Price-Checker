@@ -10,10 +10,18 @@
 
 var expect = require('chai').expect;
 const MongoClient = require('mongodb');
+const fetch       = require("node-fetch");
 
 const MONGODB_CONNECTION_STRING = process.env.DB;
 
 const alphaVantageAPIKEY = process.env.APIKEY;
+
+function getStock(stockSymbol) {
+  let url = 'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stockSymbol}&apikey=${alphaVantageAPIKEY}';
+  fetch(url).then(jsonData => {
+    console.log(jsonData)
+  }); 
+}
 
 module.exports = function (app) {
   
@@ -26,7 +34,9 @@ module.exports = function (app) {
       response.stockData.stock = req.query.stock.toUpperCase(); 
       response.stockData.price = 1;
       response.stockData.likes = 1;
-      res.json(response);
+      console.log(response);
+      res.json({}); 
+      // res.json({stockData:{stock:"GOOG",price:"786.90",likes:1}});
   });
     
 }; 
