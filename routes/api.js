@@ -16,29 +16,28 @@ const MONGODB_CONNECTION_STRING = process.env.DB;
 
 const alphaVantageAPIKEY = process.env.APIKEY;
 
-function getStockData(stockSymbol) {
-  let url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stockSymbol}&apikey=${alphaVantageAPIKEY}`;
+const getStockData = (req, res, next) => {
+  let url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${req.query.stock}&apikey=${alphaVantageAPIKEY}`;
   console.log(url);
   fetch(url)
     .then(response => response.json())
     .then(jsonData => {
-      let response = {
+      res.locals.stockData = {
         'stock': jsonData['Global Quote']["01. symbol"], 
         'price': jsonData['Global Quote']['05. price']
       }
-      console.log(response);
-      return response;
   }); 
+  next();
 }
 
 module.exports = function (app) {
-  
   app.route('/api/stock-prices')
     .get(function (req, res){
       var response = {stockData: {}}
       var stock = req.query.stock;
       var like = req.query.like || false;
       var reqIP = req.connection.remoteAddress;
+      app.use(getStockData(req, res, next) 
       console.log('getStockData return: ' + getStockData(req.query.stock));
       response.stockData.stock = req.query.stock.toUpperCase(); 
       response.stockData.price = 1;
