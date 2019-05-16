@@ -26,6 +26,7 @@ app.use(helmet.contentSecurityPolicy({
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+
 //Index page (static HTML)
 app.route('/')
   .get(function (req, res) {
