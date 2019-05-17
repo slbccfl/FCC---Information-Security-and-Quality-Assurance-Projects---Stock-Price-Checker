@@ -14,11 +14,11 @@ const getStockData = require('../middleware/getStockData');
 module.exports = function (app) {
   app.route('/api/stock-prices')
     .get(getStockData, function (req, res){
-      var response = {stockData: {}}
-      var stock = req.query.stock;
-      var like = req.query.like || false;
-      var reqIP = req.connection.remoteAddress;
-      console.log(`res.locals.stockData: ${JSON.stringify(res.locals.stockData)}`);
+      // var response = {stockData: {}}
+      // var stock = req.query.stock;
+      // var like = req.query.like || false;
+      // var reqIP = req.connection.remoteAddress;
+      // console.log(`res.locals.stockData: ${JSON.stringify(res.locals.stockData)}`);
       // response.stockData.stock = req.query.stock.toUpperCase(); 
       // response.stockData.price = 1;
       // response.stockData.likes = 1;
