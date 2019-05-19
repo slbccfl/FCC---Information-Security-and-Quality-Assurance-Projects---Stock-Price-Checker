@@ -12,18 +12,21 @@ function checkStatus(res) {
     }
 }
 
-function getStock(stockSym) {      
+async function getStock(stockSym) {      
   var likes = 0;
-  MongoClient.connect(MONGODB_CONNECTION_STRING, (err, db) => {
+  await MongoClient.connect(MONGODB_CONNECTION_STRING, (err, db) => {
     const collection = db.collection("stocks");
     collection.find({symbol: stockSym}).toArray((err, result) => {
-      if (result.length === 0) {
-        likes = 0;
+      console.log(result)
+      if (result.length == 0) {
+        likes = 0; 
       } else {
-        return result[0].likes;
+        likes = result[0].likes;
       };
     });
   }); 
+      console.log(likes)
+  
   return likes;
 }
 
