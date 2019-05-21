@@ -18,16 +18,14 @@ async function getStock(stockSym) {
     const collection = db.collection("stocks");
     collection.find({symbol: stockSym}).toArray((err, result) => {
       console.log(result)
-      if (result.length == 0) {
+      if (result.length === 0) {
         likes = 0; 
       } else {
         likes = result[0].likes;
       };
     });
   }); 
-      console.log(likes)
-  
-  return likes;
+  return likes; 
 }
 
 const getStockData = (req, res, next) => {
