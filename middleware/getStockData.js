@@ -25,31 +25,33 @@ async function getStock(stockSym) {
       };
     });
   }); 
-  return likes; 
+  return likes;
 }
 
-const getStockData = (req, res, next) => {
-  
-  let url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${req.query.stock}&apikey=${alphaVantageAPIKEY}`;
-  // console.log(`url: ${url}`);
-  fetch(url)
-    .then(checkStatus)
-    .then(response => response.json())
-    .then(jsonData => {
-      // console.log(`jsonData: ${JSON.stringify(jsonData)}`);
-      var stockSym = jsonData['Global Quote']["01. symbol"];
-      console.log('getStock return: ' + getStock(stockSym))
-      res.locals.stockData = {
-        'stock': stockSym, 
-        'price': jsonData['Global Quote']['05. price'],
-        'likes': getStock(stockSym)
-      }
-      // console.log(`res.locals.stockData: ${JSON.stringify(res.locals.stockData)}`);
-      next();
-    
-    
-    })
-    .catch(err => console.log(`fetch err: ${err}`)); 
+const getStockData = async (req, res, next) => {
+  try {
+    let url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${req.query.stock}&apikey=${alphaVantageAPIKEY}`;
+    // console.log(`url: ${url}`);
+    fetch(url)
+      .then(checkStatus)
+      .then(response => response.json())
+      .then(jsonData => {
+        // console.log(`jsonData: ${JSON.stringify(jsonData)}`);
+        var stockSym = jsonData['Global Quote']["01. symbol"];
+        console.log('getStock return: ' + getStock(stockSym))
+        res.locals.stockData = {
+          'stock': stockSym, 
+          'price': jsonData['Global Quote']['05. price'],
+          'likes': getStock(stockSym)
+        }
+      })
+        // console.log(`res.locals.stockData: ${JSON.stringify(res.locals.stockData)}`);
+      .catch(err => console.log(`fetch err: ${err}`)); 
+    next();
+  }
+  catch (err){
+    next(err);
+  }
 }
 
 module.exports = getStockData;
