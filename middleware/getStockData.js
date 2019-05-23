@@ -12,23 +12,39 @@ function checkStatus(res) {
     }
 }
 
-async function getStock(stockSym) {      
+function getLikesPromise(stockSym, next) {      
   var likes = 0;
-  await MongoClient.connect(MONGODB_CONNECTION_STRING, (err, db) => {
-    const collection = db.collection("stocks");
-    collection.find({symbol: stockSym}).toArray((err, result) => {
-      console.log(result)
-      if (result.length === 0) {
-        likes = 0; 
-      } else {
-        likes = result[0].likes;
+  try {
+    MongoClient.connect(MONGODB_CONNECTION_STRING, (err, db) => {
+      const collection = db.collection("stocks");
+      var getLikes = () => {
+        return new Promise((resolve, reject) => {
+          collection.find({symbol: stockSym}).toArray((err, result) => {
+            console.log('result: ' + JSON.stringify(result))
+            if (result.length === 0) {
+              likes = 0; 
+            } else {
+              likes = result[0].likes;
+              console.log('likes 1: ' + likes)
+            };
+            err 
+              ? reject(err) 
+              : resolve(likes);
+          });
+        });
       };
-    });
-  }); 
-  return likes;
+      return getLikes;
+      // var callMyPromise = async () => {
+      //   return await findLikesPromise()
+      // }
+    
+    }); 
+  } catch (err) {
+    next(err)
+  }
 }
 
-const getStockData = async (req, res, next) => {
+const getStockData = (req, res, next) => {
   try {
     let url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${req.query.stock}&apikey=${alphaVantageAPIKEY}`;
     // console.log(`url: ${url}`);
@@ -38,11 +54,14 @@ const getStockData = async (req, res, next) => {
       .then(jsonData => {
         // console.log(`jsonData: ${JSON.stringify(jsonData)}`);
         var stockSym = jsonData['Global Quote']["01. symbol"];
-        console.log('getStock return: ' + getStock(stockSym))
+        var getLikes = getLikesPromise(stockSym, next);
+        getLikes(stockSym, next).then((stockLikes) => {
+          console.log('getLikes return: ' + stockLikes)
+          
+        })
         res.locals.stockData = {
-          'stock': stockSym, 
-          'price': jsonData['Global Quote']['05. price'],
-          'likes': getStock(stockSym)
+          'stock': stockSym,
+          'price': jsonData['Global Quote']['05. price']
         }
       })
         // console.log(`res.locals.stockData: ${JSON.stringify(res.locals.stockData)}`);
@@ -53,5 +72,6 @@ const getStockData = async (req, res, next) => {
     next(err);
   }
 }
+
 
 module.exports = getStockData;
