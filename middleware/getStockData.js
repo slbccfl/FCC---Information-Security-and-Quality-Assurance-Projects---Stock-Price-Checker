@@ -12,60 +12,38 @@ function checkStatus(res) {
     }
 }
 
-function getLikesPromise(stockSym, next) {      
+function getLikes(stockSym) {      
   var likes = 0;
-  try {
-    MongoClient.connect(MONGODB_CONNECTION_STRING, (err, db) => {
-      const collection = db.collection("stocks");
-      var getLikes = () => {
-        return new Promise((resolve, reject) => {
-          collection.find({symbol: stockSym}).toArray((err, result) => {
-            console.log('result: ' + JSON.stringify(result))
-            if (result.length === 0) {
-              likes = 0; 
-            } else {
-              likes = result[0].likes;
-              console.log('likes 1: ' + likes)
-            };
-            err 
-              ? reject(err) 
-              : resolve(likes);
-          });
-        });
+  MongoClient.connect(MONGODB_CONNECTION_STRING, async (err, db) => {
+    const collection = db.collection("stocks");
+    collection.find({symbol: stockSym}).toArray((err, result) => {
+      console.log('result: ' + JSON.stringify(result))
+      if (result.length === 0) {
+        likes = 0; 
+      } else {
+        likes = result[0].likes;
+        console.log('likes 1: ' + likes)
       };
-      return getLikes;
-      // var callMyPromise = async () => {
-      //   return await findLikesPromise()
-      // }
-    
-    }); 
-  } catch (err) {
-    next(err)
-  }
+      console.log('likes 2: ' + likes)
+      return likes
+    });
+  });
 }
 
-const getStockData = (req, res, next) => {
+const getStockData = async (req, res, next) => {
   try {
     let url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${req.query.stock}&apikey=${alphaVantageAPIKEY}`;
     // console.log(`url: ${url}`);
-    fetch(url)
-      .then(checkStatus)
-      .then(response => response.json())
-      .then(jsonData => {
-        // console.log(`jsonData: ${JSON.stringify(jsonData)}`);
-        var stockSym = jsonData['Global Quote']["01. symbol"];
-        var getLikes = getLikesPromise(stockSym, next);
-        getLikes(stockSym, next).then((stockLikes) => {
-          console.log('getLikes return: ' + stockLikes)
-          
-        })
-        res.locals.stockData = {
-          'stock': stockSym,
-          'price': jsonData['Global Quote']['05. price']
-        }
-      })
-        // console.log(`res.locals.stockData: ${JSON.stringify(res.locals.stockData)}`);
-      .catch(err => console.log(`fetch err: ${err}`)); 
+    let response = await fetch(url)
+    let jsonData = await response.json()
+    console.log(`jsonData: ${JSON.stringify(jsonData)}`);
+    var stockSym = jsonData['Global Quote']["01. symbol"];
+    let likes = await getLikes(stockSym)
+    console.log('returned likes: ' + likes)
+    res.locals.stockData = {
+      'stock': stockSym,
+      'price': jsonData['Global Quote']['05. price']
+    }
     next();
   }
   catch (err){
