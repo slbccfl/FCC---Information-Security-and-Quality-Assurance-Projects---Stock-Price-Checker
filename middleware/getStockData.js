@@ -12,21 +12,25 @@ function checkStatus(res) {
     }
 }
 
-function getLikes(stockSym) {      
-  var likes = 0;
-  MongoClient.connect(MONGODB_CONNECTION_STRING, async (err, db) => {
-    const collection = db.collection("stocks");
-    collection.find({symbol: stockSym}).toArray((err, result) => {
-      console.log('result: ' + JSON.stringify(result))
-      if (result.length === 0) {
-        likes = 0; 
-      } else {
-        likes = result[0].likes;
-        console.log('likes 1: ' + likes)
-      };
-      console.log('likes 2: ' + likes)
-      return likes
-    });
+const getLikes = (stockSym, next) => {
+  return new Promise((resolve, reject) => {
+    try {
+      var likes = 0;
+      MongoClient.connect(MONGODB_CONNECTION_STRING, async (err, db) => {
+        const collection = db.collection("stocks");
+        collection.find({symbol: stockSym}).toArray((err, result) => {
+          console.log('result: ' + JSON.stringify(result))
+          if (result.length === 0) {
+            likes = 0; 
+          } else {
+            likes = result[0].likes;
+          };
+          resolve(likes)
+        });
+      });
+    } catch (err) { 
+      next(err)
+    }
   });
 }
 
@@ -38,11 +42,12 @@ const getStockData = async (req, res, next) => {
     let jsonData = await response.json()
     console.log(`jsonData: ${JSON.stringify(jsonData)}`);
     var stockSym = jsonData['Global Quote']["01. symbol"];
-    let likes = await getLikes(stockSym)
+    let likes = await getLikes(stockSym, next)
     console.log('returned likes: ' + likes)
     res.locals.stockData = {
       'stock': stockSym,
-      'price': jsonData['Global Quote']['05. price']
+      'price': jsonData['Global Quote']['05. price'],
+      'likes': likes
     }
     next();
   }

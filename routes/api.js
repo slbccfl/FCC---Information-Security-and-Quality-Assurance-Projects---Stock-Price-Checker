@@ -13,7 +13,7 @@ const getStockData = require('../middleware/getStockData');
 
 module.exports = function (app) {
   app.route('/api/stock-prices')
-    .get(getStockData, function (req, res){
+    .get(getStockData, function (req, res, next){
       // var response = {stockData: {}}
       // var stock = req.query.stock;
       // var like = req.query.like || false;
