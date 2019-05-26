@@ -23,6 +23,7 @@ module.exports = function (app) {
       // response.stockData.price = 1;
       // response.stockData.likes = 1;
       // // console.log(response);
+      // console.log(`res.locals: ${JSON.stringify(res.locals)}`)
       res.json(res.locals); 
       // res.json({stockData:{stock:"GOOG",price:"786.90",likes:1}});
   });
