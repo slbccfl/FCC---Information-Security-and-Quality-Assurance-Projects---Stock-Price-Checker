@@ -12,19 +12,24 @@ function checkStatus(res) {
     }
 }
 
-const getLikes = (stockSym, next) => {
+const getLikes = (stockSym, newLike, next) => {
   return new Promise((resolve, reject) => {
     try {
       var likes = 0;
       MongoClient.connect(MONGODB_CONNECTION_STRING, async (err, db) => {
         const collection = db.collection("stocks");
-        collection.find({symbol: stockSym}).toArray((err, result) => {
-          // console.log('result: ' + JSON.stringify(result))
-          if (result.length === 0) { 
+        collection.find({symbol: stockSym.toUpperCase()}).toArray((err, result) => {
+          console.log('result: ' + JSON.stringify(result))
+          if (result.length === 0) {
             likes = 0; 
           } else {
             likes = result[0].likes;
           };
+          if (newLike) {
+            likes++
+            let updateLikes = {'symbol': stockSym.toUpperCase(), 'likes': likes}
+            collection.update({symbol: stockSym.toUpperCase()},result[0],{upsert: true})
+          }
           resolve(likes)
         });
       });
@@ -42,14 +47,14 @@ const stockAPI = (stockSym, next) => {
       fetch(url)
         .then((response) => response.json())
         .then((jsonData) => {
-        // console.log(`jsonData: ${JSON.stringify(jsonData)}`);
-        var stockSym = jsonData['Global Quote']["01. symbol"];
-        // let likes = await getLikes(stockSym, next)
-        // console.log('returned likes: ' + likes)
-        let stockData = {
-          'stock': stockSym,
-          'price': jsonData['Global Quote']['05. price'],
-          // 'likes': likes
+          // console.log(`jsonData: ${JSON.stringify(jsonData)}`);
+          var stockSym = jsonData['Global Quote']["01. symbol"];
+          // let likes = await getLikes(stockSym, next)
+          // console.log('returned likes: ' + likes)
+          let stockData = {
+            'stock': stockSym,
+            'price': jsonData['Global Quote']['05. price'],
+            // 'likes': likes
         }
         // console.log(`stockData: ${JSON.stringify(stockData)}`)
         resolve(stockData) 
