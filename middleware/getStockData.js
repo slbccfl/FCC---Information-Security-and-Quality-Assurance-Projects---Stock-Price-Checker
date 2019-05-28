@@ -12,24 +12,19 @@ function checkStatus(res) {
     }
 }
 
-const getLikes = (stockSym, newLike, next) => {
+const getLikes = (stockSym, IP, newLike, next) => {
   return new Promise((resolve, reject) => {
     try {
       var likes = 0;
       MongoClient.connect(MONGODB_CONNECTION_STRING, async (err, db) => {
         const collection = db.collection("stocks");
-        collection.find({symbol: stockSym.toUpperCase()}).toArray((err, result) => {
+        if (newLike) {
+          let updateDoc = {stockSym: stockSym.toUpperCase(), IP: IP} 
+          collection.update(updateDoc, updateDoc, {upsert: true})
+        }
+        collection.find({stockSym: stockSym.toUpperCase()}).toArray((err, result) => {
           console.log('result: ' + JSON.stringify(result))
-          if (result.length === 0) {
-            likes = 0; 
-          } else {
-            likes = result[0].likes;
-          };
-          if (newLike) {
-            likes++
-            let updateLikes = {'symbol': stockSym.toUpperCase(), 'likes': likes}
-            collection.update({symbol: stockSym.toUpperCase()},result[0],{upsert: true})
-          }
+          likes = result.length
           resolve(likes)
         });
       });
@@ -71,12 +66,13 @@ const getStockData = async (req, res, next) => {
   try {
     
     let stockSym = req.query.stock 
+    let IP = req.connection.remoteAddress
     // console.log(`stockSym: ${stockSym}`)
     // let returnData = await stockAPI(stockSym, next)
     // console.log(`returnData: ${JSON.stringify(returnData)}`)
     // let likes = await getLikes(stockSym, next)
     // console.log(`likes: ${likes}`)
-    await Promise.all([stockAPI(stockSym, next), getLikes(stockSym, next)]).then((returnData) => {
+    await Promise.all([stockAPI(stockSym, next), getLikes(stockSym, IP, next)]).then((returnData) => {
       // console.log(`returnData: ${JSON.stringify(returnData)}`)
       res.locals.stockData = returnData[0];
       res.locals.stockData.likes = returnData[1];
