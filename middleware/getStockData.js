@@ -66,7 +66,7 @@ const getStockData = async (req, res, next) => {
   try {
     
     let stockSym = req.query.stock 
-    let IP = req.connection.remoteAddress
+    let IP = req.ip
     // console.log(`stockSym: ${stockSym}`)
     // let returnData = await stockAPI(stockSym, next)
     // console.log(`returnData: ${JSON.stringify(returnData)}`)
