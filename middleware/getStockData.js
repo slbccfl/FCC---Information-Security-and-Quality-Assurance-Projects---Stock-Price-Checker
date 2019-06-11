@@ -38,7 +38,7 @@ const stockAPI = (stockSym, next) => {
   return new Promise((resolve, reject) => {
     try {
       let url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stockSym}&apikey=${alphaVantageAPIKEY}`;
-      console.log(`url: ${url}`);
+      // console.log(`url: ${url}`);
       fetch(url)
         .then((response) => response.json())
         .then((jsonData) => {
@@ -66,14 +66,14 @@ const getStockData = async (req, res, next) => {
   try {
     
     let stockSym = req.query.stock 
-    let IP = req.connection.remoteAddress
+    let IP = req.ip
     // console.log(`stockSym: ${stockSym}`)
     // let returnData = await stockAPI(stockSym, next)
     // console.log(`returnData: ${JSON.stringify(returnData)}`)
     // let likes = await getLikes(stockSym, next)
     // console.log(`likes: ${likes}`)
     await Promise.all([stockAPI(stockSym, next), getLikes(stockSym, IP, next)]).then((returnData) => {
-      // console.log(`returnData: ${JSON.stringify(returnData)}`)
+      console.log(`returnData: ${JSON.stringify(returnData)}`)
       res.locals.stockData = returnData[0];
       res.locals.stockData.likes = returnData[1];
       // console.log(`res.locals: ${JSON.stringify(res.locals)}`)
