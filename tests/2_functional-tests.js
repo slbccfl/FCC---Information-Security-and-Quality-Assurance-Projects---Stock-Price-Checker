@@ -20,7 +20,7 @@ const ip = '::ffff:' + os.networkInterfaces().lo[0].address;
 chai.use(chaiHttp);
 
 suite('Functional Tests', function() {
-  suite('Setup for Functional Tests', function() {
+  suiteSetup('Setup for Functional Tests', function() {
     try { 
       MongoClient.connect(MONGODB_CONNECTION_STRING, async (err, db) => {
         const collection = db.collection("stocks");
@@ -87,7 +87,7 @@ suite('Functional Tests', function() {
 //           done();
 //       });
   
-  suite('Teardown after Functional Tests', function() {
+  suiteTeardown('Teardown after Functional Tests', function() {
     try { 
       MongoClient.connect(MONGODB_CONNECTION_STRING, async (err, db) => {
         if (err) throw err
