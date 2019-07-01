@@ -19,10 +19,10 @@ function getLikes(stockSym, IP, newLike, next) {
       MongoClient.connect(MONGODB_CONNECTION_STRING, async (err, db) => {
         const collection = db.collection("stocks");
         if (newLike) {
-          let updateDoc = {stockSym: stockSym.toUpperCase(), IP: IP} 
+          let updateDoc = {stockSym: stockSym, IP: IP} 
           collection.update(updateDoc, updateDoc, {upsert: true})
         }
-        collection.find({stockSym: stockSym.toUpperCase()}).toArray((err, result) => {
+        collection.find({stockSym: stockSym}).toArray((err, result) => {
           console.log('result: ' + JSON.stringify(result))
           likes = result.length
           resolve(likes)
@@ -38,18 +38,17 @@ function stockAPI(stockSym, next) {
   return new Promise((resolve, reject) => {
     try {
       let url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stockSym}&apikey=${alphaVantageAPIKEY}`;
-      // console.log(`url: ${url}`);
+      console.log(`url: ${url}`);
       fetch(url)
         .then((response) => response.json())
         .then((jsonData) => {
-          // console.log(`jsonData: ${JSON.stringify(jsonData)}`);
+          console.log(`jsonData: ${JSON.stringify(jsonData)}`);
           var stockSym = jsonData['Global Quote']["01. symbol"];
           // let likes = await getLikes(stockSym, next)
           // console.log('returned likes: ' + likes)
           let stockData = {
             'stock': stockSym,
-            'price': jsonData['Global Quote']['05. price'],
-            // 'likes': likes
+            'price': jsonData['Global Quote']['05. price']
         }
         // console.log(`stockData: ${JSON.stringify(stockData)}`)
         resolve(stockData) 
@@ -63,10 +62,12 @@ function stockAPI(stockSym, next) {
 }
 
 async function getStockData(req, res, next) {
-  try {
-    if (typeof req.query.stock === 'string') {
-      let stockSym = req.query.stock 
-      let IP = req.ip
+  var stockSym = '';
+  var IP = '';
+  if (typeof req.query.stock === 'string') {
+    try {
+      stockSym = req.query.stock.toUpperCase()
+      IP = req.ip
       console.log(`stockSym: ${stockSym}`)
       // let returnData = await stockAPI(stockSym, next)
       // console.log(`returnData: ${JSON.stringify(returnData)}`)
@@ -79,14 +80,36 @@ async function getStockData(req, res, next) {
         // console.log(`res.locals: ${JSON.stringify(res.locals)}`)
 
       })
-    } else {
+      next();
+    }
+    catch (err){
+      next(err);
+    }
+  } else {
+    try {
       console.log('TWO STOCKS');
+      stockSym = req.query.stock[0].toUpperCase();
+      IP = req.ip
+      console.log(`stockSym: ${stockSym}`)
+      await Promise.all([stockAPI(stockSym, next), getLikes(stockSym, IP, next)]).then((returnData) => {
+        console.log(`returnData: ${JSON.stringify(returnData)}`)
+        res.locals.stockData[0] = returnData[0];
+        res.locals.stockData[0].likes = returnData[1];
+      })
+      // stockSym = req.query.stock[1].toUpperCase()
+      // IP = req.ip
+      // console.log(`stockSym: ${stockSym}`)
+      // await Promise.all([stockAPI(stockSym, next), getLikes(stockSym, IP, next)]).then((returnData) => {
+      //   console.log(`returnData: ${JSON.stringify(returnData)}`)
+      //   res.locals.stockData = returnData[0];
+      //   res.locals.stockData.likes = returnData[1];
+      // })
+      next();
+    }
+    catch (err){
+      next(err);
     }
 
-    next();
-  }
-  catch (err){
-    next(err);
   }
 }
 
