@@ -95,16 +95,15 @@ suite('Functional Tests', function() {
         .get('/api/stock-prices')
         .query({stock: ["goog", "msft"], like: false }) 
         .end(function(err, res){
-          // console.log('body: ' + JSON.stringify(res.body));
+          console.log('res.body: ' + JSON.stringify(res.body)); 
           assert.equal(res.status, 200);
           assert.equal(res.body.stockData[0].stock, "GOOG");
           assert.equal(res.body.stockData[1].stock, "MSFT");
-          assert.property(res.body.stockData, 'price');
-          assert.property(res.body.stockData, 'likes');
-          assert.equal(res.body.stockData.stock, 'GOOG');
+          assert.property(res.body.stockData[0], "price");
+          assert.property(res.body.stockData[1], "price"); 
           assert.property(res.body.stockData[0], "rel_likes");
           assert.property(res.body.stockData[1], "rel_likes");
-          done(); 
+          done();
       });
     });
       
