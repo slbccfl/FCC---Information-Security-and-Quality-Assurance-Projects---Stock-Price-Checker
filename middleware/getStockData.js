@@ -12,7 +12,7 @@ function checkStatus(res) {
     }
 }
 
-const getLikes = (stockSym, IP, newLike, next) => {
+function getLikes(stockSym, IP, newLike, next) {
   return new Promise((resolve, reject) => {
     try {
       var likes = 0;
@@ -34,7 +34,7 @@ const getLikes = (stockSym, IP, newLike, next) => {
   });
 }
 
-const stockAPI = (stockSym, next) => {
+function stockAPI(stockSym, next) {
   return new Promise((resolve, reject) => {
     try {
       let url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stockSym}&apikey=${alphaVantageAPIKEY}`;
@@ -62,23 +62,26 @@ const stockAPI = (stockSym, next) => {
   });
 }
 
-const getStockData = async (req, res, next) => {
+async function getStockData(req, res, next) {
   try {
-    
-    let stockSym = req.query.stock 
-    let IP = req.ip
-    // console.log(`stockSym: ${stockSym}`)
-    // let returnData = await stockAPI(stockSym, next)
-    // console.log(`returnData: ${JSON.stringify(returnData)}`)
-    // let likes = await getLikes(stockSym, next)
-    // console.log(`likes: ${likes}`)
-    await Promise.all([stockAPI(stockSym, next), getLikes(stockSym, IP, next)]).then((returnData) => {
-      console.log(`returnData: ${JSON.stringify(returnData)}`)
-      res.locals.stockData = returnData[0];
-      res.locals.stockData.likes = returnData[1];
-      // console.log(`res.locals: ${JSON.stringify(res.locals)}`)
-      
-    })
+    if (typeof req.query.stock === 'string') {
+      let stockSym = req.query.stock 
+      let IP = req.ip
+      console.log(`stockSym: ${stockSym}`)
+      // let returnData = await stockAPI(stockSym, next)
+      // console.log(`returnData: ${JSON.stringify(returnData)}`)
+      // let likes = await getLikes(stockSym, next)
+      // console.log(`likes: ${likes}`)
+      await Promise.all([stockAPI(stockSym, next), getLikes(stockSym, IP, next)]).then((returnData) => {
+        console.log(`returnData: ${JSON.stringify(returnData)}`)
+        res.locals.stockData = returnData[0];
+        res.locals.stockData.likes = returnData[1];
+        // console.log(`res.locals: ${JSON.stringify(res.locals)}`)
+
+      })
+    } else {
+      console.log('TWO STOCKS');
+    }
 
     next();
   }
