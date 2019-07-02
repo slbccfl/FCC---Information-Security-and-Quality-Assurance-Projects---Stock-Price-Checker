@@ -102,9 +102,11 @@ suite('Functional Tests', function() {
           assert.equal(res.body.stockData[0].stock, "GOOG");
           assert.property(res.body.stockData[0], "price");
           assert.property(res.body.stockData[0], "rel_likes");
+          assert.equal(res.body.stockData[0].rel_likes, 3);
           assert.equal(res.body.stockData[1].stock, "MSFT");
           assert.property(res.body.stockData[1], "price"); 
           assert.property(res.body.stockData[1], "rel_likes"); 
+          assert.equal(res.body.stockData[1].rel_likes, -3);
           done();
       });
     });
@@ -119,9 +121,11 @@ suite('Functional Tests', function() {
           assert.equal(res.body.stockData[0].stock, "GOOG");
           assert.property(res.body.stockData[0], "price");
           assert.property(res.body.stockData[0], "rel_likes");
+          assert.equal(res.body.stockData[0].rel_likes, 2);
           assert.equal(res.body.stockData[1].stock, "MSFT");
           assert.property(res.body.stockData[1], "price"); 
           assert.property(res.body.stockData[1], "rel_likes"); 
+          assert.equal(res.body.stockData[1].rel_likes, -2);
           done();
       });
     });
