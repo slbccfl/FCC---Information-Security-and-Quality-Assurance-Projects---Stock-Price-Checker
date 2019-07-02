@@ -29,8 +29,10 @@ suite('Functional Tests', function() {
         collection.update(updateDoc, updateDoc, {upsert: true})
         updateDoc = {stockSym: 'GOOG', IP: 1} 
         collection.update(updateDoc, updateDoc, {upsert: true})
-        // remove like for current ip
+        // remove like for current ip for both GOOG and MSFT
         let removeDoc = {stockSym: 'GOOG', IP: ip} 
+        collection.remove(removeDoc); 
+        removeDoc = {stockSym: 'MSFT', IP: ip} 
         collection.remove(removeDoc); 
       });
     } catch (err) { 
@@ -44,7 +46,7 @@ suite('Functional Tests', function() {
     test('1 stock', function(done) {
      chai.request(server)
       .get('/api/stock-prices')
-      .query({stock: 'goog'})
+      .query({stock: 'goog', like:false})
       .end(function(err, res){
         // console.log('body: ' + JSON.stringify(res.body));
         assert.equal(res.status, 200); 
@@ -95,21 +97,34 @@ suite('Functional Tests', function() {
         .get('/api/stock-prices')
         .query({stock: ["goog", "msft"], like: false }) 
         .end(function(err, res){
-          console.log('res.body: ' + JSON.stringify(res.body)); 
+          console.log('res.body: ' + JSON.stringify(res.body));  
           assert.equal(res.status, 200);
           assert.equal(res.body.stockData[0].stock, "GOOG");
-          assert.equal(res.body.stockData[1].stock, "MSFT");
           assert.property(res.body.stockData[0], "price");
-          assert.property(res.body.stockData[1], "price"); 
           assert.property(res.body.stockData[0], "rel_likes");
-          assert.property(res.body.stockData[1], "rel_likes");
+          assert.equal(res.body.stockData[1].stock, "MSFT");
+          assert.property(res.body.stockData[1], "price"); 
+          assert.property(res.body.stockData[1], "rel_likes"); 
           done();
       });
     });
       
-//       test('2 stocks with like', function(done) {
-//           done();
-//       });
+    test('2 stocks with like', function(done) {
+      chai.request(server)
+        .get('/api/stock-prices')
+        .query({stock: ["goog", "msft"], like: true }) 
+        .end(function(err, res){
+          console.log('res.body: ' + JSON.stringify(res.body));  
+          assert.equal(res.status, 200);
+          assert.equal(res.body.stockData[0].stock, "GOOG");
+          assert.property(res.body.stockData[0], "price");
+          assert.property(res.body.stockData[0], "rel_likes");
+          assert.equal(res.body.stockData[1].stock, "MSFT");
+          assert.property(res.body.stockData[1], "price"); 
+          assert.property(res.body.stockData[1], "rel_likes"); 
+          done();
+      });
+    });
   });
   
   suiteTeardown('Teardown after Functional Tests', function() {
@@ -123,6 +138,8 @@ suite('Functional Tests', function() {
         removeDoc = {stockSym: 'GOOG', IP: 1} 
         collection.remove(removeDoc); 
         removeDoc = {stockSym: 'GOOG', IP: ip} 
+        collection.remove(removeDoc); 
+        removeDoc = {stockSym: 'MSFT', IP: ip} 
         collection.remove(removeDoc); 
       });
     } catch (err) { 

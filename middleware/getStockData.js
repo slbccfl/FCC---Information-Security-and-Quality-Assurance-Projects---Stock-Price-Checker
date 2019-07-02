@@ -13,6 +13,7 @@ function checkStatus(res) {
 }
 
 function getLikes(stockSym, IP, newLike, next) {
+  console.log('newLike: ' + newLike);
   return new Promise((resolve, reject) => {
     try {
       var likes = 0;
@@ -49,8 +50,8 @@ function stockAPI(stockSym, next) {
           let stockData = {
             'stock': stockSym,
             'price': jsonData['Global Quote']['05. price']
-        }
-        // console.log(`stockData: ${JSON.stringify(stockData)}`)
+          }
+        console.log(`stockData: ${JSON.stringify(stockData)}`)
         resolve(stockData) 
         
       })
@@ -58,6 +59,9 @@ function stockAPI(stockSym, next) {
     catch (err){
       next(err);
     }
+    //
+    // stub to avoid hitting API while developing
+        // resolve({"stock":"GOOG","price":"1097.9500"});
   });
 }
 
@@ -69,11 +73,7 @@ async function getStockData(req, res, next) {
       stockSym = req.query.stock.toUpperCase()
       IP = req.ip
       console.log(`stockSym: ${stockSym}`)
-      // let returnData = await stockAPI(stockSym, next)
-      // console.log(`returnData: ${JSON.stringify(returnData)}`)
-      // let likes = await getLikes(stockSym, next)
-      // console.log(`likes: ${likes}`)
-      await Promise.all([stockAPI(stockSym, next), getLikes(stockSym, IP, next)]).then((returnData) => {
+      await Promise.all([stockAPI(stockSym, next), getLikes(stockSym, IP, req.query.like, next)]).then((returnData) => {
         console.log(`returnData: ${JSON.stringify(returnData)}`)
         res.locals.stockData = returnData[0];
         res.locals.stockData.likes = returnData[1];
@@ -88,22 +88,26 @@ async function getStockData(req, res, next) {
   } else {
     try {
       console.log('TWO STOCKS');
+      let likes0, likes1 = 0;
       stockSym = req.query.stock[0].toUpperCase();
       IP = req.ip
       console.log(`stockSym: ${stockSym}`)
-      await Promise.all([stockAPI(stockSym, next), getLikes(stockSym, IP, next)]).then((returnData) => {
+      await Promise.all([stockAPI(stockSym, next), getLikes(stockSym, IP, req.query.like, next)]).then((returnData) => {
         console.log(`returnData: ${JSON.stringify(returnData)}`)
+        res.locals.stockData = [];
         res.locals.stockData[0] = returnData[0];
-        res.locals.stockData[0].likes = returnData[1];
+        likes0 = returnData[1];
       })
-      // stockSym = req.query.stock[1].toUpperCase()
-      // IP = req.ip
-      // console.log(`stockSym: ${stockSym}`)
-      // await Promise.all([stockAPI(stockSym, next), getLikes(stockSym, IP, next)]).then((returnData) => {
-      //   console.log(`returnData: ${JSON.stringify(returnData)}`)
-      //   res.locals.stockData = returnData[0];
-      //   res.locals.stockData.likes = returnData[1];
-      // })
+      stockSym = req.query.stock[1].toUpperCase()
+      IP = req.ip
+      console.log(`stockSym: ${stockSym}`)
+      await Promise.all([stockAPI(stockSym, next), getLikes(stockSym, IP, req.query.like, next)]).then((returnData) => {
+        console.log(`returnData: ${JSON.stringify(returnData)}`)
+        res.locals.stockData[1] = returnData[0];
+        likes1 = returnData[1];
+      })
+      res.locals.stockData[0].rel_likes = likes0 - likes1;
+      res.locals.stockData[1].rel_likes = likes1 - likes0;
       next();
     }
     catch (err){
