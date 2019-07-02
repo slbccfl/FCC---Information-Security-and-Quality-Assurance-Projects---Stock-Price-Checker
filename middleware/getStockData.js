@@ -14,18 +14,22 @@ function checkStatus(res) {
 
 function getLikes(stockSym, IP, newLike, next) {
   console.log('newLike: ' + newLike);
+  console.log('typeof newLike: ' + typeof newLike);
   return new Promise((resolve, reject) => {
     try {
       var likes = 0;
       MongoClient.connect(MONGODB_CONNECTION_STRING, async (err, db) => {
         const collection = db.collection("stocks");
-        if (newLike) {
+        console.log('newLike: ' + newLike); 
+        if (newLike === true) {
           let updateDoc = {stockSym: stockSym, IP: IP} 
+          console.log('updateDoc: ' + updateDoc);
+          
           collection.update(updateDoc, updateDoc, {upsert: true})
         }
         collection.find({stockSym: stockSym}).toArray((err, result) => {
           console.log('result: ' + JSON.stringify(result))
-          likes = result.length
+          likes = result.length 
           resolve(likes)
         });
       });
@@ -37,31 +41,33 @@ function getLikes(stockSym, IP, newLike, next) {
 
 function stockAPI(stockSym, next) {
   return new Promise((resolve, reject) => {
-    try {
-      let url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stockSym}&apikey=${alphaVantageAPIKEY}`;
-      console.log(`url: ${url}`);
-      fetch(url)
-        .then((response) => response.json())
-        .then((jsonData) => {
-          console.log(`jsonData: ${JSON.stringify(jsonData)}`);
-          var stockSym = jsonData['Global Quote']["01. symbol"];
-          // let likes = await getLikes(stockSym, next)
-          // console.log('returned likes: ' + likes)
-          let stockData = {
-            'stock': stockSym,
-            'price': jsonData['Global Quote']['05. price']
-          }
-        console.log(`stockData: ${JSON.stringify(stockData)}`)
-        resolve(stockData) 
-        
-      })
+    if (stockSym == 'GOOG') {
+    // stub to avoid hitting API too much while developing
+        resolve({"stock":"GOOG","price":"1097.9500"});
+    } else {
+      try {
+        let url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stockSym}&apikey=${alphaVantageAPIKEY}`;
+        console.log(`url: ${url}`);
+        fetch(url)
+          .then((response) => response.json())
+          .then((jsonData) => {
+            console.log(`jsonData: ${JSON.stringify(jsonData)}`);
+            var stockSym = jsonData['Global Quote']["01. symbol"];
+            // let likes = await getLikes(stockSym, next)
+            // console.log('returned likes: ' + likes)
+            let stockData = {
+              'stock': stockSym,
+              'price': jsonData['Global Quote']['05. price']
+            }
+          console.log(`stockData: ${JSON.stringify(stockData)}`)
+          resolve(stockData) 
+
+        })
+      }
+      catch (err){
+        next(err);
+      }
     }
-    catch (err){
-      next(err);
-    }
-    //
-    // stub to avoid hitting API while developing
-        // resolve({"stock":"GOOG","price":"1097.9500"});
   });
 }
 
