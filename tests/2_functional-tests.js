@@ -20,7 +20,7 @@ const ip = '::ffff:' + os.networkInterfaces().lo[0].address;
 chai.use(chaiHttp);
 
 suite('Functional Tests', function() {
-  suiteSetup('Setup for Functional Tests', function() {
+  suiteSetup('Setup for Functional Tests', function(done) {
     try { 
       MongoClient.connect(MONGODB_CONNECTION_STRING, async (err, db) => {
         const collection = db.collection("stocks");
@@ -34,6 +34,7 @@ suite('Functional Tests', function() {
         collection.remove(removeDoc); 
         removeDoc = {stockSym: 'MSFT', IP: ip} 
         collection.remove(removeDoc); 
+        done();
       });
     } catch (err) { 
       throw err
