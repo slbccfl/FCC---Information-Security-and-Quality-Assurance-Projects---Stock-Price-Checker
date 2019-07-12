@@ -80,7 +80,7 @@ suite('Functional Tests', function() {
       });
     });
       
-    test('1 stock with like again (ensure likes arent double counted)', function(done) {
+    test('1 stock with like again (ensure likes are not double counted)', function(done) {
       chai.request(server)
         .get('/api/stock-prices')
         .query({stock: 'GOOG', like:true}) 
@@ -102,7 +102,9 @@ suite('Functional Tests', function() {
         .get('/api/stock-prices')
         .query({stock: ["goog", "msft"], like: false }) 
         .end(function(err, res){
-          console.log('res.body: ' + JSON.stringify(res.body));  
+          // console.log('res.body: ' + JSON.stringify(res.body));  
+          console.log('res.text: ' + JSON.stringify(res.text));  
+          console.log('err: ' + JSON.stringify(err));  
           assert.equal(res.status, 200);
           assert.equal(res.body.stockData[0].stock, "GOOG");
           assert.property(res.body.stockData[0], "price");

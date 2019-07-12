@@ -55,15 +55,19 @@ function getLikes(stockSym, IP, newLike, next) {
 
 function stubStockAPI(stockSym, next) {
   return new Promise((resolve, reject) => {
-    if (stockSym == 'GOOG') {
-    // stub to avoid hitting API too much while developing
-        resolve({"stock":"GOOG","price":"0000.0000"});
-    } else {
-        if (stockSym == 'MSFT') {
-        // stub to avoid hitting API too much while developing
-            resolve({"stock":"MSFT","price":"0000.0000"});
-        }
-    }
+    console.log(Date.now());
+    setTimeout(function() {
+      if (stockSym == 'GOOG') {
+      // stub to avoid hitting API too much while developing
+          resolve({"stock":"GOOG","price":"0000.0000"});
+      } else {
+          if (stockSym == 'MSFT') {
+          // stub to avoid hitting API too much while developing
+              resolve({"stock":"MSFT","price":"0000.0000"});
+          }
+      }
+      
+    },300)
   });
 }
 
@@ -71,22 +75,25 @@ function stockAPI(stockSym, next) {
   return new Promise((resolve, reject) => {
 
     try {
-      let url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stockSym}&apikey=${alphaVantageAPIKEY}`;
-      console.log(`url: ${url}`);
-      fetch(url)
-        .then((response) => response.json())
-        .then((jsonData) => {
-          console.log(`jsonData: ${JSON.stringify(jsonData)}`);
-          var stockSym = jsonData['Global Quote']["01. symbol"];
-          let stockData = {
-            'stock': stockSym,
-            'price': jsonData['Global Quote']['05. price']
-          }
-        console.log(`stockData: ${JSON.stringify(stockData)}`)
-        resolve(stockData) 
+      setTimeout(function() {
+        let url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stockSym}&apikey=${alphaVantageAPIKEY}`;
+        console.log(`url: ${url}`);
+        fetch(url)
+          .then((response) => response.json())
+          .then((jsonData) => {
+            console.log(`jsonData: ${JSON.stringify(jsonData)}`);
+            var stockSym = jsonData['Global Quote']["01. symbol"];
+            let stockData = {
+              'stock': stockSym,
+              'price': jsonData['Global Quote']['05. price']
+            }
+          console.log(`stockData: ${JSON.stringify(stockData)}`)
+          resolve(stockData) 
 
-      })
-    }
+        })
+      
+      },300)
+    } 
     catch (error){
       reject (error); 
     }
@@ -102,7 +109,7 @@ async function getStockData(req, res, next) {
       stockSym = req.query.stock.toUpperCase()
       IP = req.ip
       // console.log(`stockSym: ${stockSym}`)
-      await Promise.all([stubStockAPI(stockSym, next), getLikes(stockSym, IP, req.query.like, next)]).then((returnData) => {
+      await Promise.all([stockAPI(stockSym, next), getLikes(stockSym, IP, req.query.like, next)]).then((returnData) => {
         console.log(`returnData: ${JSON.stringify(returnData)}`)
         res.locals.stockData = returnData[0];
         res.locals.stockData.likes = returnData[1];
@@ -120,7 +127,7 @@ async function getStockData(req, res, next) {
       stockSym = req.query.stock[0].toUpperCase();
       IP = req.ip
       // console.log(`stockSym: ${stockSym}`)
-      await Promise.all([setTimeout(stubStockAPI(stockSym, next),1000), getLikes(stockSym, IP, req.query.like, next)]).then((returnData) => {
+      await Promise.all([stockAPI(stockSym, next), getLikes(stockSym, IP, req.query.like, next)]).then((returnData) => {
         console.log(`returnData: ${JSON.stringify(returnData)}`)
         res.locals.stockData = [];
         res.locals.stockData[0] = returnData[0];
@@ -129,7 +136,7 @@ async function getStockData(req, res, next) {
       stockSym = req.query.stock[1].toUpperCase()
       IP = req.ip
       console.log(`stockSym: ${stockSym}`)
-      await Promise.all([stubStockAPI(stockSym, next), getLikes(stockSym, IP, req.query.like, next)]).then((returnData) => {
+      await Promise.all([stockAPI(stockSym, next), getLikes(stockSym, IP, req.query.like, next)]).then((returnData) => {
         console.log(`returnData: ${JSON.stringify(returnData)}`)
         res.locals.stockData[1] = returnData[0];
         likes1 = returnData[1];
