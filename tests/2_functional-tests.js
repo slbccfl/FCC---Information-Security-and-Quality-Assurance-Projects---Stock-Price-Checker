@@ -50,11 +50,13 @@ suite('Functional Tests', function() {
       .query({stock: 'goog', like:false})
       .end(function(err, res){
         // console.log('body: ' + JSON.stringify(res.body));
+        console.log('err: ' + JSON.stringify(err));
         assert.equal(res.status, 200); 
         assert.property(res.body.stockData, 'stock');
         assert.property(res.body.stockData, 'price');
         assert.property(res.body.stockData, 'likes');
         assert.equal(res.body.stockData.stock, 'GOOG');
+        assert.notEqual(res.body.stockData.price, '0000.0000', 'stubStockAPI is enabled');
         assert.equal(res.body.stockData.likes, 2);
         likeCount = res.body.stockData.likes;
         done(); 
@@ -72,6 +74,7 @@ suite('Functional Tests', function() {
           assert.property(res.body.stockData, 'price');
           assert.property(res.body.stockData, 'likes');
           assert.equal(res.body.stockData.stock, 'GOOG');
+        assert.notEqual(res.body.stockData.price, '0000.0000', 'stubStockAPI is enabled');
           assert.equal(res.body.stockData.likes, likeCount + 1);
           done(); 
       });
@@ -88,6 +91,7 @@ suite('Functional Tests', function() {
           assert.property(res.body.stockData, 'price');
           assert.property(res.body.stockData, 'likes');
           assert.equal(res.body.stockData.stock, 'GOOG');
+        assert.notEqual(res.body.stockData.price, '0000.0000', 'stubStockAPI is enabled');
           assert.equal(res.body.stockData.likes, likeCount + 1);
           done(); 
       });
@@ -104,10 +108,12 @@ suite('Functional Tests', function() {
           assert.property(res.body.stockData[0], "price");
           assert.property(res.body.stockData[0], "rel_likes");
           assert.equal(res.body.stockData[0].rel_likes, 3);
+        assert.notEqual(res.body.stockData.price, '0000.0000', 'stubStockAPI is enabled');
           assert.equal(res.body.stockData[1].stock, "MSFT");
           assert.property(res.body.stockData[1], "price"); 
           assert.property(res.body.stockData[1], "rel_likes"); 
           assert.equal(res.body.stockData[1].rel_likes, -3);
+        assert.notEqual(res.body.stockData.price, '0000.0000', 'stubStockAPI is enabled');
           done();
       });
     });
@@ -122,11 +128,13 @@ suite('Functional Tests', function() {
           assert.equal(res.body.stockData[0].stock, "GOOG");
           assert.property(res.body.stockData[0], "price");
           assert.property(res.body.stockData[0], "rel_likes");
+        assert.notEqual(res.body.stockData.price, '0000.0000', 'stubStockAPI is enabled');
           assert.equal(res.body.stockData[0].rel_likes, 2);
           assert.equal(res.body.stockData[1].stock, "MSFT");
           assert.property(res.body.stockData[1], "price"); 
           assert.property(res.body.stockData[1], "rel_likes"); 
           assert.equal(res.body.stockData[1].rel_likes, -2);
+        assert.notEqual(res.body.stockData.price, '0000.0000', 'stubStockAPI is enabled');
           done();
       });
     });
